@@ -1,0 +1,145 @@
+import type { AIPrediction, Driver, NotificationItem, ServiceHealth, Shipment, Trip, User, Vehicle } from '../types'
+
+export const mockUsers: User[] = [
+  { id: 'U-1001', name: 'Aisha Rahman', email: 'customer@smartfleet.io', password: 'password123', role: 'user' },
+  { id: 'D-2001', name: 'Daniel Scott', email: 'driver@smartfleet.io', password: 'password123', role: 'driver' },
+  { id: 'M-3001', name: 'Maya Johnson', email: 'manager@smartfleet.io', password: 'password123', role: 'manager' },
+]
+
+export const mockShipments: Shipment[] = [
+  {
+    id: 'SHP-1001',
+    customer: 'Aisha Rahman',
+    origin: 'Colombo 07 Residence',
+    destination: 'Kandy Residence',
+    status: 'In Transit',
+    vehicle: 'V-104',
+    driver: 'D-2001',
+    priority: 'High',
+    estimatedDelivery: '2026-09-18 16:45',
+    currentLocation: 'Kurunegala',
+    progress: 72,
+    type: 'House Shifting',
+    weight: '420 kg',
+    quantity: 12,
+    specialHandling: 'Furniture, appliances, and packed household boxes',
+    senderName: 'Aisha Rahman',
+    senderContact: '+94 77 111 2222',
+    receiverName: 'Kandy Residence',
+    receiverContact: '+94 77 222 3333',
+    route: 'A1 Main Road',
+  },
+  {
+    id: 'SHP-1012',
+    customer: 'Nimal Perera',
+    origin: 'Madampe Sand Quarry',
+    destination: 'Negombo Construction Site',
+    status: 'Assigned',
+    vehicle: 'V-102',
+    driver: 'D-2004',
+    priority: 'Medium',
+    estimatedDelivery: '2026-09-18 12:30',
+    currentLocation: 'Galle',
+    progress: 18,
+    type: 'Sand Transportation',
+    weight: '780 kg',
+    quantity: 25,
+    specialHandling: 'Covered heavy lorry required',
+    senderName: 'Nimal Perera',
+    senderContact: '+94 77 333 4444',
+    receiverName: 'Negombo Construction Site',
+    receiverContact: '+94 77 444 5555',
+    route: 'Southern Highway',
+  },
+  {
+    id: 'SHP-1024',
+    customer: 'Aisha Rahman',
+    origin: 'Katunayake Material Yard',
+    destination: 'Dambulla Construction Site',
+    status: 'Delayed',
+    vehicle: 'V-107',
+    driver: 'D-2005',
+    priority: 'High',
+    estimatedDelivery: '2026-09-18 21:05',
+    currentLocation: 'Matale',
+    progress: 55,
+    type: 'Construction Materials',
+    weight: '2,600 kg',
+    quantity: 8,
+    specialHandling: 'Cement, bricks, and gravel secured for transport',
+    senderName: 'Aisha Rahman',
+    senderContact: '+94 77 111 2222',
+    receiverName: 'Dambulla Construction Site',
+    receiverContact: '+94 77 666 7777',
+    route: 'Central Expressway',
+  },
+  {
+    id: 'SHP-1038',
+    customer: 'Harini Silva',
+    origin: 'Jaffna Furniture Store',
+    destination: 'Trincomalee Residence',
+    status: 'Delivered',
+    vehicle: 'V-111',
+    driver: 'D-2003',
+    priority: 'Low',
+    estimatedDelivery: '2026-09-16 09:10',
+    currentLocation: 'Trincomalee',
+    progress: 100,
+    type: 'Furniture Transportation',
+    weight: '500 kg',
+    quantity: 18,
+    specialHandling: 'Protect furniture with blankets and straps',
+    senderName: 'Harini Silva',
+    senderContact: '+94 77 999 1111',
+    receiverName: 'Trincomalee Residence',
+    receiverContact: '+94 77 222 1111',
+    route: 'A9 Main Road',
+  },
+]
+
+export const mockVehicles: Vehicle[] = [
+  { id: 'V-101', registrationNumber: 'CAB-2041', type: 'Truck', status: 'Available', condition: 'Excellent', mileage: 18200, fuelEfficiency: 13.8, maintenanceRisk: 24, assignedDriver: 'Unassigned', fuelLevel: 76, maintenanceDue: '2026-10-12' },
+  { id: 'V-102', registrationNumber: 'CAB-6784', type: 'Van', status: 'In Use', condition: 'Good', mileage: 26890, fuelEfficiency: 14.2, maintenanceRisk: 38, assignedDriver: 'D-2004', fuelLevel: 64, maintenanceDue: '2026-09-30' },
+  { id: 'V-104', registrationNumber: 'CAB-4452', type: 'Truck', status: 'In Use', condition: 'Excellent', mileage: 21980, fuelEfficiency: 15.4, maintenanceRisk: 31, assignedDriver: 'D-2001', fuelLevel: 58, maintenanceDue: '2026-10-09' },
+  { id: 'V-107', registrationNumber: 'CAB-2209', type: 'Mini Van', status: 'In Use', condition: 'Fair', mileage: 41300, fuelEfficiency: 11.7, maintenanceRisk: 72, assignedDriver: 'D-2005', fuelLevel: 33, maintenanceDue: '2026-09-17' },
+  { id: 'V-111', registrationNumber: 'CAB-7532', type: 'Truck', status: 'Available', condition: 'Good', mileage: 22440, fuelEfficiency: 14.9, maintenanceRisk: 47, assignedDriver: 'Unassigned', fuelLevel: 81, maintenanceDue: '2026-10-21' },
+]
+
+export const mockDrivers: Driver[] = [
+  { id: 'D-2001', name: 'Daniel Scott', license: 'DL-12093', availability: 'On Trip', assignedVehicle: 'V-104', currentTrip: 'TRIP-203', status: 'Active' },
+  { id: 'D-2003', name: 'Lahiru Jayasena', license: 'DL-22417', availability: 'Available', assignedVehicle: 'V-111', currentTrip: 'TRIP-109', status: 'Active' },
+  { id: 'D-2004', name: 'Shanaka Dias', license: 'DL-11188', availability: 'On Trip', assignedVehicle: 'V-102', currentTrip: 'TRIP-330', status: 'Active' },
+  { id: 'D-2005', name: 'Mithun Fernando', license: 'DL-9843', availability: 'On Trip', assignedVehicle: 'V-107', currentTrip: 'TRIP-215', status: 'Active' },
+]
+
+export const mockTrips: Trip[] = [
+  { id: 'TRIP-203', source: 'Colombo 07 Residence', destination: 'Kandy Residence', distance: '115 km', estimatedTime: '3h 40m', status: 'In Progress', shipmentId: 'SHP-1001', route: 'A1 Main Road' },
+  { id: 'TRIP-330', source: 'Madampe Sand Quarry', destination: 'Negombo Construction Site', distance: '86 km', estimatedTime: '2h 25m', status: 'Planned', shipmentId: 'SHP-1012', route: 'Southern Highway' },
+  { id: 'TRIP-215', source: 'Katunayake Material Yard', destination: 'Dambulla Construction Site', distance: '161 km', estimatedTime: '3h 55m', status: 'In Progress', shipmentId: 'SHP-1024', route: 'Central Expressway' },
+  { id: 'TRIP-109', source: 'Jaffna Furniture Store', destination: 'Trincomalee Residence', distance: '98 km', estimatedTime: '2h 40m', status: 'Completed', shipmentId: 'SHP-1038', route: 'A9 Main Road' },
+]
+
+export const mockAIPredictions: AIPrediction[] = [
+  { id: 'AI-1', title: 'Vehicle V-107 maintenance risk', description: 'Brake wear trending above acceptable range and coolant leakage detected.', score: 82, severity: 'High', recommendation: 'Schedule inspection before next long haul.', category: 'maintenance' },
+  { id: 'AI-2', title: 'Route efficiency forecast', description: 'Route B is 11% faster than the current assignment under current traffic patterns.', score: 91, severity: 'Medium', recommendation: 'Recommend Route B for construction material request SHP-1024.', category: 'route' },
+  { id: 'AI-3', title: 'Fuel consumption anomaly', description: 'V-111 shows reduced fuel efficiency due to repeated idle time.', score: 68, severity: 'Medium', recommendation: 'Review driver behavior and maintenance tuning.', category: 'fuel' },
+  { id: 'AI-4', title: 'Vehicle allocation suggestion', description: 'Assign V-104 to the house shifting request due to its solid health score and load capacity.', score: 94, severity: 'Low', recommendation: 'Use V-104 for the next house shifting request.', category: 'allocation' },
+]
+
+export const mockNotifications: NotificationItem[] = [
+  { id: 'N-1', message: 'Vehicle V-104 has high maintenance risk.', type: 'warning', role: 'all' },
+  { id: 'N-2', message: 'Transport request SHP-1024 has been assigned.', type: 'info', role: 'all' },
+  { id: 'N-3', message: 'Trip TRIP-203 has started.', type: 'success', role: 'all' },
+  { id: 'N-4', message: 'AI recommends Route B.', type: 'info', role: 'all' },
+  { id: 'N-5', message: 'Your transport request is delayed due to weather risk.', type: 'critical', role: 'user' },
+]
+
+export const mockServiceHealth: ServiceHealth[] = [
+  { name: 'Vehicle Service', status: 'ONLINE', description: 'Fleet health tracking and utilization', detail: 'Response 114ms' },
+  { name: 'Driver Service', status: 'ONLINE', description: 'Driver assignment and availability', detail: 'Response 98ms' },
+  { name: 'Shipment Service', status: 'ONLINE', description: 'Shipment routing and lifecycle management', detail: 'Response 139ms' },
+  { name: 'Trip Service', status: 'DEGRADED', description: 'Trip updates routed through API gateway', detail: 'Response 240ms' },
+  { name: 'Maintenance Service', status: 'ONLINE', description: 'Predictive maintenance scoring', detail: 'Response 166ms' },
+  { name: 'Route Service', status: 'ONLINE', description: 'Short path and route optimization', detail: 'Response 122ms' },
+  { name: 'AI/ML Service', status: 'ONLINE', description: 'Predictive maintenance and route recommendations', detail: 'Response 195ms' },
+]
