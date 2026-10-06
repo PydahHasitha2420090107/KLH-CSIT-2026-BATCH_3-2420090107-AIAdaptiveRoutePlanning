@@ -1,14 +1,21 @@
 import { useMockApi } from './mockRegistry'
+import { API_BASE_URL, request } from './api'
 import type { ChatMessage, UserRole } from '../types'
+
+type ChatResponse = {
+  success: boolean
+  data: { message?: string; answer?: string }
+  message: string
+}
 
 export const aiService = {
   async getRecommendations(role: UserRole, context: string): Promise<string[]> {
     if (!useMockApi()) return []
 
     const defaults: Record<UserRole, string[]> = {
-      user: ['How can I request a house shifting vehicle?', 'What vehicle suits my house shifting?', 'Where is my transport request?'],
-      driver: ['What is my next transport assignment?', 'What material am I transporting?', 'Where is the pickup location?'],
-      manager: ['Which vehicle suits this house shifting request?', 'Which lorry suits sand transportation?', 'Show today\'s transport requests.'],
+      user: ['How can I create a transport request?', 'Where is my shipment?', 'What is my estimated delivery time?'],
+      driver: ['What is my next transport assignment?', 'Where is my pickup location?', 'What is my estimated travel time?'],
+      manager: ['Which vehicle should be assigned to this shipment?', 'Which transport requests need assignment?', 'Show fleet utilization.'],
     }
 
     if (context.includes('shipment') || context.includes('transport')) return defaults[role].slice(0, 3)
@@ -17,41 +24,19 @@ export const aiService = {
     return defaults[role]
   },
 
-  async askQuestion(role: UserRole, question: string): Promise<string> {
-    if (!useMockApi()) return 'AI service is not connected yet.'
-
-    if (question.toLowerCase().includes('where is my shipment') || question.toLowerCase().includes('transport request') || question.toLowerCase().includes('shipment')) {
-      return 'Your house shifting request SHP-1001 is currently in Kurunegala and is on track to reach the Kandy residence by 16:45 today.'
-    }
-
-    if (question.toLowerCase().includes('maintenance')) {
-      return 'Vehicle V-107 has the highest maintenance risk at 82%. It should be scheduled for inspection before the next trip.'
-    }
-
-    if (question.toLowerCase().includes('route')) {
-      return 'AI recommends Route B because it offers the shortest predicted travel time and a lower congestion risk.'
-    }
-
-    if (question.toLowerCase().includes('assign') || question.toLowerCase().includes('vehicle')) {
-      return 'The strongest recommendation is the medium covered truck V-104 for this local transport request, with low maintenance risk and strong fuel efficiency.'
-    }
-
-    if (role === 'manager') {
-      return 'Fleet health is stable, with 5 vehicles active, 2 under caution, and 1 high-risk maintenance alert requiring attention.'
-    }
-
-    if (role === 'driver') {
-      return 'Your next assignment is TRIP-203 for a house shifting request from Colombo 07 Residence to Kandy Residence. Route B is recommended with 3h 21m estimated travel time.'
-    }
-
-    return 'I recommend checking the next highest-priority transport request and confirming vehicle capacity before dispatch.'
+  async askQuestion(question: string): Promise<string> {
+    const response = await request<ChatResponse>(`${API_BASE_URL}/ai/chat`, {
+      method: 'POST',
+      body: JSON.stringify({ message: question }),
+    })
+    const answer = response.data.message || response.data.answer
+    if (!answer) throw new Error('The AI assistant returned an empty response.')
+    return answer
   },
 
   async getMockChatHistory(role: UserRole): Promise<ChatMessage[]> {
     return [
-      { id: 'm1', sender: 'ai', text: role === 'manager' ? 'I can help with fleet optimization and local transport requests.' : role === 'driver' ? 'I can help with route planning and transport assignments.' : 'I can help track your transport request and estimated arrival.', timestamp: '09:41 AM', roleContext: role },
-      { id: 'm2', sender: 'user', text: role === 'manager' ? 'Which vehicle suits this house shifting request?' : role === 'driver' ? 'What is my next transport assignment?' : 'Where is my transport request?', timestamp: '09:42 AM', roleContext: role },
-      { id: 'm3', sender: 'ai', text: role === 'manager' ? 'The medium covered truck V-104 is the strongest recommendation for this house shifting request.' : role === 'driver' ? 'Your next assignment is TRIP-203 from Colombo 07 Residence to Kandy Residence.' : 'Your house shifting request SHP-1001 is in Kurunegala and on schedule.', timestamp: '09:42 AM', roleContext: role },
+      { id: 'welcome', sender: 'ai', text: 'Hello. I can answer SmartFleet questions using information available to your account.', timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), roleContext: role },
     ]
   },
 }

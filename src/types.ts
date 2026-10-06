@@ -6,6 +6,7 @@ export type ShipmentStatus =
   | 'In Transit'
   | 'Delayed'
   | 'Delivered'
+  | 'Cancelled'
 
 export type TripStatus = 'Planned' | 'In Progress' | 'Completed'
 

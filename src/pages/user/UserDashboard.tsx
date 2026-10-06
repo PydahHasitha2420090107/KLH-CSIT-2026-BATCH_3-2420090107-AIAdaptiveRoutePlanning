@@ -1,17 +1,41 @@
+import { useEffect, useState } from 'react'
 import { ArrowRight, PackageCheck, Truck, Clock3, MapPinned } from 'lucide-react'
 import { Card } from '../../components/common/Card'
 import { Button } from '../../components/common/Button'
 import { Link } from 'react-router-dom'
-import { mockShipments } from '../../mocks/mockData'
 import { Badge } from '../../components/common/Badge'
+import { shipmentService, type UserDashboardData } from '../../services/shipmentService'
+import { useShipments } from '../../hooks/useShipments'
 
 export function UserDashboard() {
-  const stats = [
-    { label: 'Active Transport Requests', value: '12', icon: PackageCheck },
-    { label: 'Completed Requests', value: '46', icon: Truck },
-    { label: 'Pending Requests', value: '8', icon: Clock3 },
-    { label: 'Delayed Requests', value: '3', icon: MapPinned },
-  ]
+  const { shipments, loading: shipmentsLoading, error: shipmentsError } = useShipments()
+  const [dashboard, setDashboard] = useState<UserDashboardData | null>(null)
+  const [dashboardError, setDashboardError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void shipmentService.fetchUserDashboard()
+      .then((result) => { if (active) setDashboard(result) })
+      .catch((cause: unknown) => {
+        if (active) setDashboardError(cause instanceof Error ? cause.message : 'Unable to load dashboard data.')
+      })
+    return () => { active = false }
+  }, [])
+
+  const stats = dashboard ? [
+    { label: 'Active Transport Requests', value: dashboard.stats.activeTransportRequests, icon: PackageCheck },
+    { label: 'Completed Requests', value: dashboard.stats.completedRequests, icon: Truck },
+    { label: 'Pending Requests', value: dashboard.stats.pendingRequests, icon: Clock3 },
+    { label: 'Delayed Requests', value: dashboard.stats.delayedRequests, icon: MapPinned },
+  ] : []
+  const activeShipment = dashboard?.activeShipment
+    ? shipments.find((shipment) => shipment.id === dashboard.activeShipment?.id) ?? null
+    : null
+
+  if (dashboardError || shipmentsError) {
+    return <div className="empty-state-box" role="alert">Unable to load the customer dashboard: {dashboardError || shipmentsError}</div>
+  }
+  if (!dashboard || shipmentsLoading) return <div className="empty-state-box" role="status">Loading customer dashboard...</div>
 
   return (
     <>
@@ -42,25 +66,25 @@ export function UserDashboard() {
           <div className="shipment-tracker">
             <div className="tracker-row">
               <span>Transport ID</span>
-              <strong>{mockShipments[0].id}</strong>
+              <strong>{activeShipment?.id ?? 'No active request'}</strong>
             </div>
             <div className="tracker-row">
               <span>Current Status</span>
-              <Badge tone="success">{mockShipments[0].status}</Badge>
+              {activeShipment ? <Badge tone="success">{activeShipment.status}</Badge> : <strong>Unavailable</strong>}
             </div>
             <div className="tracker-row">
               <span>Current Location</span>
-              <strong>{mockShipments[0].currentLocation}</strong>
+              <strong>{activeShipment?.currentLocation ?? 'No active location'}</strong>
             </div>
             <div className="tracker-row">
               <span>Estimated Arrival</span>
-              <strong>{mockShipments[0].estimatedDelivery}</strong>
+              <strong>{activeShipment?.estimatedDelivery ?? 'Unavailable'}</strong>
             </div>
             <div className="progress-label">
               <span>Progress</span>
-              <strong>{mockShipments[0].progress}%</strong>
+              <strong>{activeShipment?.progress ?? 0}%</strong>
             </div>
-            <div className="progress-bar"><span style={{ width: `${mockShipments[0].progress}%` }} /></div>
+            <div className="progress-bar"><span style={{ width: `${activeShipment?.progress ?? 0}%` }} /></div>
           </div>
         </Card>
 
@@ -91,7 +115,7 @@ export function UserDashboard() {
               </tr>
             </thead>
             <tbody>
-              {mockShipments.map((shipment) => (
+              {shipments.map((shipment) => (
                 <tr key={shipment.id}>
                   <td>{shipment.id}</td>
                   <td>{shipment.origin}</td>
@@ -102,6 +126,7 @@ export function UserDashboard() {
                   <td><Link to="/user/track-shipment" className="text-link">View <ArrowRight size={14} /></Link></td>
                 </tr>
               ))}
+              {shipments.length === 0 && <tr><td colSpan={7}>No transport requests are linked to your account.</td></tr>}
             </tbody>
           </table>
         </div>

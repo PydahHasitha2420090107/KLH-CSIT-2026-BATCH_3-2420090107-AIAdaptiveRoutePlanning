@@ -1,16 +1,47 @@
 import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import { Card } from '../../components/common/Card'
 import { Button } from '../../components/common/Button'
 import { Input } from '../../components/common/Input'
-import { Badge } from '../../components/common/Badge'
+import { shipmentService } from '../../services/shipmentService'
 
 export function CreateShipment() {
-  const [submitted, setSubmitted] = useState(false)
+  const { user } = useAuth()
+  const [submittedId, setSubmittedId] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [priority, setPriority] = useState('High')
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setSubmitted(true)
+    setError('')
+    setLoading(true)
+    const form = new FormData(event.currentTarget)
+    const text = (name: string) => String(form.get(name) ?? '').trim()
+
+    try {
+      const shipment = await shipmentService.createShipment({
+        origin: text('origin'),
+        destination: text('destination'),
+        type: text('type'),
+        weight: text('weight'),
+        quantity: Number(text('quantity')) || 1,
+        priority,
+        preferredDate: text('preferredDate'),
+        preferredTime: text('preferredTime'),
+        materialType: text('materialType'),
+        specialHandling: text('specialHandling'),
+        receiverName: text('receiverName'),
+        receiverContact: text('receiverContact'),
+        senderContact: text('senderContact'),
+        customer: user?.name,
+      })
+      setSubmittedId(shipment.id)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to create the transport request.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -24,37 +55,37 @@ export function CreateShipment() {
 
       <div className="content-grid two-col">
         <Card title="Transport request">
-          <form className="stack-form" onSubmit={handleSubmit}>
+          <form className="stack-form" onSubmit={(event) => void handleSubmit(event)}>
             <div className="form-section-title">Customer Details</div>
             <div className="two-field-grid">
-              <Input label="Customer name" defaultValue="Aisha Rahman" />
-              <Input label="Contact number" defaultValue="+94 77 111 2222" />
+              <Input label="Customer name" name="customerName" defaultValue={user?.name ?? ''} required />
+              <Input label="Contact number" name="senderContact" />
             </div>
 
             <div className="form-section-title">Delivery Details</div>
             <div className="two-field-grid">
-              <Input label="Delivery location" defaultValue="Kandy Residence" />
-              <Input label="Delivery contact" defaultValue="+94 77 222 3333" />
+              <Input label="Delivery location" name="receiverName" required />
+              <Input label="Delivery contact" name="receiverContact" />
             </div>
-            <Input label="Delivery address" defaultValue="No. 14, Peradeniya Road, Kandy" />
+            <Input label="Delivery address" name="destination" required />
 
             <div className="form-section-title">Pickup Details</div>
             <div className="two-field-grid">
-              <Input label="Pickup location" defaultValue="Colombo 07 Residence" />
-              <Input label="Pickup address" defaultValue="No. 42, Ward Place, Colombo 07" />
+              <Input label="Pickup location" name="origin" required />
+              <Input label="Pickup address" name="pickupAddress" />
             </div>
 
             <div className="form-section-title">Transport Details</div>
             <div className="two-field-grid">
-              <label className="field"><span className="field-label">Transport type</span><select defaultValue="House Shifting"><option>House Shifting</option><option>Sand Transportation</option><option>Construction Materials</option><option>Furniture Transportation</option><option>Goods Transportation</option><option>Local Delivery</option><option>Other</option></select></label>
-              <Input label="Material / item type" defaultValue="Furniture, appliances, and boxes" />
+              <label className="field"><span className="field-label">Transport type</span><select name="type" defaultValue="General Goods"><option>E-commerce Delivery</option><option>Parcel Delivery</option><option>General Goods</option><option>House Shifting</option><option>Furniture Transportation</option><option>Sand Transportation</option><option>Construction Materials</option><option>Business Delivery</option><option>Warehouse Delivery</option><option>Other</option></select></label>
+              <Input label="Material / item type" name="materialType" />
             </div>
             <div className="two-field-grid">
-              <Input label="Approximate weight" defaultValue="420 kg" />
-              <Input label="Quantity" defaultValue="12" />
+              <Input label="Approximate weight" name="weight" required />
+              <Input label="Quantity" name="quantity" type="number" min="1" defaultValue="1" />
             </div>
             <div className="two-field-grid">
-              <Input label="Vehicle requirement" defaultValue="Medium covered truck" />
+              <Input label="Vehicle requirement" name="vehicleRequirement" />
               <label className="field">
                 <span className="field-label">Priority</span>
                 <select value={priority} onChange={(event) => setPriority(event.target.value)}>
@@ -63,33 +94,30 @@ export function CreateShipment() {
                   <option value="High">High</option>
                 </select>
               </label>
-              <Input label="Load details" defaultValue="Furniture, appliances, and packed household boxes" />
+              <Input label="Load details" name="specialHandling" />
             </div>
 
             <div className="two-field-grid">
-              <Input label="Preferred date" type="date" defaultValue="2026-09-18" />
-              <Input label="Preferred time" type="time" defaultValue="09:00" />
+              <Input label="Preferred date" name="preferredDate" type="date" />
+              <Input label="Preferred time" name="preferredTime" type="time" />
             </div>
+
+            {error && <p className="field-error" role="alert">{error}</p>}
 
             <div className="button-row">
               <Button type="button" variant="secondary">Cancel</Button>
-              <Button type="submit">Create Transport Request</Button>
+              <Button type="submit" disabled={loading}>{loading ? 'Submitting...' : 'Create Transport Request'}</Button>
             </div>
           </form>
         </Card>
 
         <Card title="AI-Powered Vehicle Recommendation" className="panel-highlight">
-          {submitted ? (
-            <div className="recommendation-box">
-              <div className="recommendation-header">
-                <Badge tone="success">AI Recommended</Badge>
-              </div>
+          {submittedId ? (
+            <div className="recommendation-box" role="status">
               <div className="recommendation-grid">
-                <div><span>Recommended vehicle</span><strong>Medium covered truck (V-104)</strong></div>
-                <div><span>Predicted travel time</span><strong>3h 41m</strong></div>
-                <div><span>Estimated fuel consumption</span><strong>42 L</strong></div>
-                <div><span>Recommended route</span><strong>Route B</strong></div>
-                <div><span>Estimated delivery time</span><strong>16:35</strong></div>
+                <div><span>Transport request created</span><strong>{submittedId}</strong></div>
+                <div><span>Status</span><strong>Pending assignment</strong></div>
+                <div><span>Next step</span><strong>A manager will review and assign a suitable vehicle and driver.</strong></div>
               </div>
             </div>
           ) : (

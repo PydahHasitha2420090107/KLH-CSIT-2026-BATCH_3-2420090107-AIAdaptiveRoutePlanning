@@ -1,9 +1,23 @@
+import { useEffect, useState } from 'react'
 import { Card } from '../../components/common/Card'
 import { Button } from '../../components/common/Button'
 import { Badge } from '../../components/common/Badge'
-import { mockVehicles } from '../../mocks/mockData'
+import { vehicleService } from '../../services/vehicleService'
+import type { Vehicle } from '../../types'
 
 export function Vehicles() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void vehicleService.fetchVehicles().then((items) => { if (active) setVehicles(items) }).catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Unable to load vehicles.') })
+    return () => { active = false }
+  }, [])
+
+  if (error) return <div className="empty-state-box" role="alert">Unable to load vehicles: {error}</div>
+  if (vehicles.length === 0) return <div className="empty-state-box" role="status">Loading vehicles or no vehicles are recorded.</div>
+
   return (
     <>
       <div className="page-header-row">
@@ -32,7 +46,7 @@ export function Vehicles() {
               </tr>
             </thead>
             <tbody>
-              {mockVehicles.map((vehicle) => (
+              {vehicles.map((vehicle) => (
                 <tr key={vehicle.id}>
                   <td>{vehicle.id}</td>
                   <td>{vehicle.registrationNumber}</td>

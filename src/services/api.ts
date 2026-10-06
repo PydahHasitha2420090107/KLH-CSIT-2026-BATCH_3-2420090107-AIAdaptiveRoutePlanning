@@ -1,5 +1,17 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
-export const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API !== 'false'
+const configuredApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/+$/, '')
+export const API_BASE_URL = configuredApiBaseUrl.endsWith('/api') ? configuredApiBaseUrl : `${configuredApiBaseUrl}/api`
+export const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true'
+
+const authTokenKey = 'smartfleet-token'
+
+export function getAuthToken() {
+  return localStorage.getItem(authTokenKey)
+}
+
+export function setAuthToken(token: string | null) {
+  if (token) localStorage.setItem(authTokenKey, token)
+  else localStorage.removeItem(authTokenKey)
+}
 
 export const serviceUrls = {
   vehicle: import.meta.env.VITE_VEHICLE_SERVICE_URL || `${API_BASE_URL}/vehicle`,
@@ -12,14 +24,25 @@ export const serviceUrls = {
 }
 
 export async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
-    ...options,
-  })
+  const headers = new Headers(options?.headers)
+  if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+  const token = getAuthToken()
+  if (token && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`)
 
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`)
+  let response: Response
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    })
+  } catch {
+    throw new Error('Sorry, I could not connect to the SmartFleet AI service. Please try again.')
   }
 
-  return (await response.json()) as T
+  const body = await response.json() as { message?: string }
+  if (!response.ok) {
+    throw new Error(body.message || `Request failed with status ${response.status}`)
+  }
+
+  return body as T
 }

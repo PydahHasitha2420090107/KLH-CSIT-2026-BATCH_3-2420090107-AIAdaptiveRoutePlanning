@@ -1,9 +1,29 @@
+import { useEffect, useState } from 'react'
 import { Card } from '../../components/common/Card'
 import { Badge } from '../../components/common/Badge'
-import { mockVehicles } from '../../mocks/mockData'
+import { dashboardService } from '../../services/dashboardService'
+import { vehicleService } from '../../services/vehicleService'
+import type { DriverDashboardData } from '../../services/dashboardService'
+import type { Vehicle } from '../../types'
 
 export function VehicleDetails() {
-  const vehicle = mockVehicles[2]
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void dashboardService.fetchDriver()
+      .then(async (dashboard: DriverDashboardData) => {
+        if (!dashboard.stats.currentVehicle) return null
+        return vehicleService.getVehicleById(dashboard.stats.currentVehicle)
+      })
+      .then((result) => { if (active) setVehicle(result) })
+      .catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Unable to load assigned vehicle.') })
+    return () => { active = false }
+  }, [])
+
+  if (error) return <div className="empty-state-box" role="alert">Unable to load assigned vehicle: {error}</div>
+  if (!vehicle) return <div className="empty-state-box" role="status">Loading assigned vehicle or no vehicle is linked to your account.</div>
 
   return (
     <>

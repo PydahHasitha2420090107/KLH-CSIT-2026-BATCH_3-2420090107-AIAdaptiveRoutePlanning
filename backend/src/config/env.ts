@@ -9,6 +9,7 @@ export const env = {
   frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
   nodeEnv: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || 'file:./smartfleet.db',
-  aiApiKey: process.env.AI_API_KEY || '',
   routeApiKey: process.env.ROUTE_API_KEY || '',
+  groqApiKey: process.env.GROQ_API_KEY || '',
+  groqModel: process.env.GROQ_MODEL || '',
 }

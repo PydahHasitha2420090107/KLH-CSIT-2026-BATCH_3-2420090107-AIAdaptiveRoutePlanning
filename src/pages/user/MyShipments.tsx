@@ -1,8 +1,13 @@
 import { Card } from '../../components/common/Card'
 import { Badge } from '../../components/common/Badge'
-import { mockShipments } from '../../mocks/mockData'
+import { useShipments } from '../../hooks/useShipments'
 
 export function MyShipments() {
+  const { shipments, loading, error } = useShipments()
+
+  if (loading) return <div className="empty-state-box" role="status">Loading transport requests...</div>
+  if (error) return <div className="empty-state-box" role="alert">Unable to load transport requests: {error}</div>
+
   return (
     <Card title="My Transport Requests">
       <div className="table-wrap">
@@ -19,7 +24,7 @@ export function MyShipments() {
             </tr>
           </thead>
           <tbody>
-            {mockShipments.map((shipment) => (
+            {shipments.map((shipment) => (
               <tr key={shipment.id}>
                 <td>{shipment.id}</td>
                 <td>{shipment.type}</td>
@@ -30,6 +35,7 @@ export function MyShipments() {
                 <td>{shipment.vehicle}</td>
               </tr>
             ))}
+            {shipments.length === 0 && <tr><td colSpan={7}>No transport requests are linked to your account.</td></tr>}
           </tbody>
         </table>
       </div>

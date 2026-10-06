@@ -22,16 +22,16 @@ export function AIChatbot() {
 
   const suggestions = useMemo(() => {
     if (role === 'manager') {
-      return ['Which vehicle suits this house shifting request?', 'Which lorry suits sand transportation?', 'Show today\'s transport requests.']
+      return ['Which vehicle should be assigned to this shipment?', 'Which transport requests need assignment?', 'Show fleet utilization.']
     }
     if (role === 'driver') {
-      return ['What is my next transport assignment?', 'What material am I transporting?', 'Where is the pickup location?']
+      return ['What is my next transport assignment?', 'Where is my pickup location?', 'What is my estimated travel time?']
     }
-    return ['How can I request a house shifting vehicle?', 'What vehicle suits my house shifting?', 'Where is my transport request?']
+    return ['How can I create a transport request?', 'Where is my shipment?', 'What is my estimated delivery time?']
   }, [role])
 
   const sendPrompt = async (question: string) => {
-    if (!question.trim()) return
+    if (!question.trim() || loading) return
 
     const newMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -45,17 +45,28 @@ export function AIChatbot() {
     setInput('')
     setLoading(true)
 
-    const answer = await aiService.askQuestion(role, question)
-    const aiMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      sender: 'ai',
-      text: answer,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      roleContext: role,
+    try {
+      const answer = await aiService.askQuestion(question)
+      const aiMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        sender: 'ai',
+        text: answer,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        roleContext: role,
+      }
+      setMessages((current) => [...current, aiMessage])
+    } catch (error) {
+      const aiMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        sender: 'ai',
+        text: error instanceof Error ? error.message : 'The SmartFleet AI service is unavailable. Please try again.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        roleContext: role,
+      }
+      setMessages((current) => [...current, aiMessage])
+    } finally {
+      setLoading(false)
     }
-
-    setMessages((current) => [...current, aiMessage])
-    setLoading(false)
   }
 
   return (

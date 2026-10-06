@@ -10,6 +10,7 @@ import { CreateShipment } from '../pages/user/CreateShipment'
 import { MyShipments } from '../pages/user/MyShipments'
 import { TrackShipment } from '../pages/user/TrackShipment'
 import { DriverDashboard } from '../pages/driver/DriverDashboard'
+import { DriverRequests } from '../pages/driver/DriverRequests'
 import { DriverRouteNavigation } from '../pages/driver/DriverRouteNavigation'
 import { VehicleDetails } from '../pages/driver/VehicleDetails'
 import { ManagerDashboard } from '../pages/manager/ManagerDashboard'
@@ -42,7 +43,8 @@ export function AppRoutes() {
       <Route path="/user/track-shipment" element={<ProtectedRoute allowedRoles={['user']}><TrackShipment /></ProtectedRoute>} />
 
       <Route path="/driver" element={<ProtectedRoute allowedRoles={['driver']}><DriverDashboard /></ProtectedRoute>} />
-      <Route path="/driver/shipments" element={<ProtectedRoute allowedRoles={['driver']}><DriverDashboard /></ProtectedRoute>} />
+      <Route path="/driver/requests" element={<ProtectedRoute allowedRoles={['driver']}><DriverRequests /></ProtectedRoute>} />
+      <Route path="/driver/shipments" element={<ProtectedRoute allowedRoles={['driver']}><DriverRequests /></ProtectedRoute>} />
       <Route path="/driver/routes" element={<ProtectedRoute allowedRoles={['driver']}><DriverRouteNavigation /></ProtectedRoute>} />
       <Route path="/driver/vehicle" element={<ProtectedRoute allowedRoles={['driver']}><VehicleDetails /></ProtectedRoute>} />
 

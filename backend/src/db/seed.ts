@@ -2,7 +2,12 @@ import { db, hashPassword } from './database.js'
 
 const users = [
   { id: 'U-1001', name: 'Aisha Rahman', email: 'customer@smartfleet.io', phone: '+94 77 111 2222', password: 'password123', role: 'user' },
+  { id: 'U-1002', name: 'Demo Retail Customer', email: 'retail.demo@smartfleet.io', phone: null, password: 'password123', role: 'user' },
+  { id: 'U-1003', name: 'Demo Business Customer', email: 'business.demo@smartfleet.io', phone: null, password: 'password123', role: 'user' },
   { id: 'D-2001', name: 'Daniel Scott', email: 'driver@smartfleet.io', phone: '+94 77 333 4444', password: 'password123', role: 'driver' },
+  { id: 'D-2003', name: 'Lahiru Jayasena', email: 'lahiru@smartfleet.io', phone: '+94 77 444 5555', password: 'password123', role: 'driver' },
+  { id: 'D-2004', name: 'Shanaka Dias', email: 'shanaka@smartfleet.io', phone: '+94 77 555 7777', password: 'password123', role: 'driver' },
+  { id: 'D-2005', name: 'Mithun Fernando', email: 'mithun@smartfleet.io', phone: '+94 77 666 8888', password: 'password123', role: 'driver' },
   { id: 'M-3001', name: 'Maya Johnson', email: 'manager@smartfleet.io', phone: '+94 77 555 6666', password: 'password123', role: 'manager' },
 ]
 
@@ -114,13 +119,82 @@ const shipments = [
     receiverContact: '+94 77 222 1111',
     route: 'A9 Main Road',
   },
+  {
+    id: 'SHP-1044',
+    customer_id: 'U-1002',
+    customer: 'Demo Retail Customer',
+    origin: 'Warehouse A, Colombo, Sri Lanka',
+    destination: 'Nugegoda Customer Hub, Sri Lanka',
+    status: 'Pending',
+    vehicle: 'Unassigned',
+    driver: 'Unassigned',
+    priority: 'Medium',
+    estimatedDelivery: '2026-10-06 15:00',
+    currentLocation: 'Warehouse A, Colombo, Sri Lanka',
+    progress: 0,
+    type: 'E-commerce Delivery',
+    weight: '2.4 kg',
+    quantity: 1,
+    specialHandling: 'Parcel delivery',
+    senderName: 'Warehouse A Dispatch',
+    senderContact: 'Not provided',
+    receiverName: 'Nugegoda Customer Hub',
+    receiverContact: 'Not provided',
+    route: 'Pending assignment',
+  },
+  {
+    id: 'SHP-1051',
+    customer_id: 'U-1003',
+    customer: 'Demo Business Customer',
+    origin: 'Katunayake Distribution Warehouse, Sri Lanka',
+    destination: 'Galle Retail Store, Sri Lanka',
+    status: 'Pending',
+    vehicle: 'Unassigned',
+    driver: 'Unassigned',
+    priority: 'High',
+    estimatedDelivery: '2026-10-06 18:00',
+    currentLocation: 'Katunayake Distribution Warehouse, Sri Lanka',
+    progress: 0,
+    type: 'General Goods',
+    weight: '350 kg',
+    quantity: 24,
+    specialHandling: 'Business-to-business stock replenishment',
+    senderName: 'Katunayake Distribution',
+    senderContact: 'Not provided',
+    receiverName: 'Galle Retail Store',
+    receiverContact: 'Not provided',
+    route: 'Pending assignment',
+  },
+  {
+    id: 'SHP-1060',
+    customer_id: 'U-1002',
+    customer: 'Demo Retail Customer',
+    origin: 'Colombo Parcel Sorting Centre, Sri Lanka',
+    destination: 'Kandy Delivery Hub, Sri Lanka',
+    status: 'Pending',
+    vehicle: 'Unassigned',
+    driver: 'Unassigned',
+    priority: 'Medium',
+    estimatedDelivery: '2026-10-07 12:00',
+    currentLocation: 'Colombo Parcel Sorting Centre, Sri Lanka',
+    progress: 0,
+    type: 'Parcel Delivery',
+    weight: '18 kg',
+    quantity: 3,
+    specialHandling: 'Handle as local parcel consignment',
+    senderName: 'Colombo Parcel Sorting Centre',
+    senderContact: 'Not provided',
+    receiverName: 'Kandy Delivery Hub',
+    receiverContact: 'Not provided',
+    route: 'Pending assignment',
+  },
 ]
 
 const trips = [
-  { id: 'TRIP-203', shipment_id: 'SHP-1001', source: 'Colombo 07 Residence', destination: 'Kandy Residence', distance: '115 km', estimated_time: '3h 40m', status: 'In Progress', route: 'A1 Main Road' },
-  { id: 'TRIP-330', shipment_id: 'SHP-1012', source: 'Madampe Sand Quarry', destination: 'Negombo Construction Site', distance: '86 km', estimated_time: '2h 25m', status: 'Planned', route: 'Southern Highway' },
-  { id: 'TRIP-215', shipment_id: 'SHP-1024', source: 'Katunayake Material Yard', destination: 'Dambulla Construction Site', distance: '161 km', estimated_time: '3h 55m', status: 'In Progress', route: 'Central Expressway' },
-  { id: 'TRIP-109', shipment_id: 'SHP-1038', source: 'Jaffna Furniture Store', destination: 'Trincomalee Residence', distance: '98 km', estimated_time: '2h 40m', status: 'Completed', route: 'A9 Main Road' },
+  { id: 'TRIP-203', shipment_id: 'SHP-1001', source: 'Colombo 07 Residence', destination: 'Kandy Residence', distance: '115 km', estimated_time: '3h 40m', status: 'In Progress', route: 'A1 Main Road', vehicle_id: 'V-104', driver_id: 'D-2001' },
+  { id: 'TRIP-330', shipment_id: 'SHP-1012', source: 'Madampe Sand Quarry', destination: 'Negombo Construction Site', distance: '86 km', estimated_time: '2h 25m', status: 'Planned', route: 'Southern Highway', vehicle_id: 'V-102', driver_id: 'D-2004' },
+  { id: 'TRIP-215', shipment_id: 'SHP-1024', source: 'Katunayake Material Yard', destination: 'Dambulla Construction Site', distance: '161 km', estimated_time: '3h 55m', status: 'In Progress', route: 'Central Expressway', vehicle_id: 'V-107', driver_id: 'D-2005' },
+  { id: 'TRIP-109', shipment_id: 'SHP-1038', source: 'Jaffna Furniture Store', destination: 'Trincomalee Residence', distance: '98 km', estimated_time: '2h 40m', status: 'Completed', route: 'A9 Main Road', vehicle_id: 'V-111', driver_id: 'D-2003' },
 ] 
 
 const aiRecommendations = [
@@ -148,6 +222,11 @@ const health = [
   { id: 'HS-7', name: 'AI/ML Service', status: 'ONLINE', description: 'Predictive maintenance and route recommendations', detail: 'Response 195ms' },
 ]
 
+const maintenanceRecords = [
+  { id: 'MNT-101', vehicle_id: 'V-107', title: 'Brake and cooling system inspection', description: 'Inspect brake wear and check coolant system before further long-haul assignments.', risk_score: 72, due_date: '2026-10-12', status: 'Scheduled', maintenance_type: 'Preventive', cost: 450 },
+  { id: 'MNT-102', vehicle_id: 'V-101', title: 'Routine service', description: 'Scheduled oil, filter, and safety inspection.', risk_score: 24, due_date: '2026-10-22', status: 'Upcoming', maintenance_type: 'Routine', cost: 180 },
+]
+
 export function seedDatabase() {
   const insertUser = db.prepare(`INSERT OR IGNORE INTO users (id, name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)`)
   for (const user of users) {
@@ -159,7 +238,7 @@ export function seedDatabase() {
     insertVehicle.run(vehicle.id, vehicle.registrationNumber, vehicle.type, vehicle.status, vehicle.condition, vehicle.mileage, vehicle.fuelEfficiency, vehicle.maintenanceRisk, vehicle.assignedDriver === 'Unassigned' ? null : vehicle.assignedDriver, vehicle.fuelLevel, vehicle.maintenanceDue)
   }
 
-  const insertShipment = db.prepare(`INSERT OR IGNORE INTO shipments (id, customer_id, customer, origin, destination, status, vehicle, driver, priority, estimated_delivery, current_location, progress, type, weight, quantity, special_handling, sender_name, sender_contact, receiver_name, receiver_contact, route) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+  const insertShipment = db.prepare(`INSERT OR IGNORE INTO shipments (id, customer_id, customer, origin, destination, status, vehicle, driver, priority, estimated_delivery, current_location, progress, type, weight, quantity, special_handling, sender_name, sender_contact, receiver_name, receiver_contact, route, pickup_location, pickup_address, destination_address, material_type, assigned_vehicle_id, assigned_driver_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
   for (const shipment of shipments) {
     insertShipment.run(
       shipment.id,
@@ -183,12 +262,19 @@ export function seedDatabase() {
       shipment.receiverName,
       shipment.receiverContact,
       shipment.route,
+      shipment.origin,
+      shipment.origin,
+      shipment.destination,
+      shipment.type,
+      shipment.vehicle === 'Unassigned' ? null : shipment.vehicle,
+      shipment.driver === 'Unassigned' ? null : shipment.driver,
     )
   }
 
-  const insertTrip = db.prepare(`INSERT OR IGNORE INTO trips (id, shipment_id, source, destination, distance, estimated_time, status, route) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+  const insertTrip = db.prepare(`INSERT OR IGNORE INTO trips (id, shipment_id, source, destination, distance, estimated_time, status, route, vehicle_id, driver_id, start_time, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
   for (const trip of trips) {
-    insertTrip.run(trip.id, trip.shipment_id, trip.source, trip.destination, trip.distance, trip.estimated_time, trip.status, trip.route)
+    const startTime = trip.status === 'In Progress' ? new Date().toISOString() : null
+    insertTrip.run(trip.id, trip.shipment_id, trip.source, trip.destination, trip.distance, trip.estimated_time, trip.status, trip.route, trip.vehicle_id, trip.driver_id, startTime, new Date().toISOString())
   }
 
   const insertDriver = db.prepare(`INSERT OR IGNORE INTO drivers (id, user_id, name, license, availability, assigned_vehicle_id, current_trip_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
@@ -211,4 +297,14 @@ export function seedDatabase() {
   for (const item of health) {
     insertServiceHealth.run(item.id, item.name, item.status, item.description, item.detail)
   }
+
+  const insertMaintenance = db.prepare(`INSERT OR IGNORE INTO maintenance_records (id, vehicle_id, title, description, risk_score, due_date, status, maintenance_type, cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+  for (const item of maintenanceRecords) {
+    insertMaintenance.run(item.id, item.vehicle_id, item.title, item.description, item.risk_score, item.due_date, item.status, item.maintenance_type, item.cost)
+  }
+
+  db.prepare(`UPDATE shipments SET assigned_vehicle_id = NULLIF(vehicle, 'Unassigned') WHERE assigned_vehicle_id IS NULL`).run()
+  db.prepare(`UPDATE shipments SET assigned_driver_id = NULLIF(driver, 'Unassigned') WHERE assigned_driver_id IS NULL`).run()
+  db.prepare(`UPDATE trips SET vehicle_id = (SELECT assigned_vehicle_id FROM shipments WHERE shipments.id = trips.shipment_id) WHERE vehicle_id IS NULL`).run()
+  db.prepare(`UPDATE trips SET driver_id = (SELECT assigned_driver_id FROM shipments WHERE shipments.id = trips.shipment_id) WHERE driver_id IS NULL`).run()
 }

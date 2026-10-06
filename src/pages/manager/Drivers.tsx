@@ -1,9 +1,23 @@
+import { useEffect, useState } from 'react'
 import { Card } from '../../components/common/Card'
 import { Button } from '../../components/common/Button'
 import { Badge } from '../../components/common/Badge'
-import { mockDrivers } from '../../mocks/mockData'
+import { driverService } from '../../services/driverService'
+import type { Driver } from '../../types'
 
 export function Drivers() {
+  const [drivers, setDrivers] = useState<Driver[]>([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void driverService.fetchDrivers().then((items) => { if (active) setDrivers(items) }).catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Unable to load drivers.') })
+    return () => { active = false }
+  }, [])
+
+  if (error) return <div className="empty-state-box" role="alert">Unable to load drivers: {error}</div>
+  if (drivers.length === 0) return <div className="empty-state-box" role="status">Loading drivers or no drivers are recorded.</div>
+
   return (
     <>
       <div className="page-header-row">
@@ -30,7 +44,7 @@ export function Drivers() {
               </tr>
             </thead>
             <tbody>
-              {mockDrivers.map((driver) => (
+              {drivers.map((driver) => (
                 <tr key={driver.id}>
                   <td>{driver.id}</td>
                   <td>{driver.name}</td>

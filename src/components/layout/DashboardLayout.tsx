@@ -15,7 +15,7 @@ const navMap: Record<UserRole, { label: string; to: string }[]> = {
   ],
   driver: [
     { label: 'Dashboard', to: '/driver' },
-    { label: 'Assigned Transport Requests', to: '/driver/shipments' },
+    { label: 'Assigned Transport Requests', to: '/driver/requests' },
     { label: 'Route Navigation', to: '/driver/routes' },
     { label: 'Vehicle', to: '/driver/vehicle' },
     { label: 'Notifications', to: '/notifications' },

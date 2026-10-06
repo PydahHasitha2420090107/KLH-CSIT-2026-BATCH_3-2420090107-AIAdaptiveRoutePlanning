@@ -1,5 +1,23 @@
 # AI-Based Predictive and Adaptive Transport Fleet Management System
 
+## Local Runtime Notes
+
+The current runnable implementation is a React/Vite frontend with an Express/TypeScript and SQLite backend. For local development, set `VITE_API_BASE_URL=http://localhost:5000/api` and `VITE_USE_MOCK_API=false` in the frontend `.env`. The backend uses `backend/.env` for its own server configuration and Groq credentials; backend secrets must never be placed in frontend variables.
+
+### Interactive Route Maps
+
+The frontend uses Leaflet with OpenStreetMap tiles for road route visualization. Pickup and destination addresses are geocoded with the public OpenStreetMap/Nominatim service and then drawn as route markers plus an actual road path from OSRM when available. SmartFleet's Dijkstra graph remains a separate algorithmic recommendation; its graph distance/time is displayed alongside the real-road geometry but does not replace the public road geometry measurement. A current vehicle marker is only drawn when actual coordinates are supplied.
+
+When geocoding or the public route service is unavailable, the map panels show a clear status message and continue to render the route markers without pretending that a synthetic line is a real road route.
+
+### SQLite Upgrades and Demo Records
+
+On non-production startup, schema changes are applied additively to the existing SQLite file and the idempotent development seed restores missing linked demo rows using `INSERT OR IGNORE`; the database is not deleted or recreated. Production startup does not seed demo data. The seed includes customer, driver, vehicle, shipment, trip, notification, and maintenance examples across several local logistics types.
+
+Recent audited gaps addressed in code include signed-JWT verification for refresh, role/ownership checks on shipment and trip operations, manager-only fleet inventory/analytics, driver-specific vehicle access, per-user notification receipts, and atomic assignment across shipment, driver, vehicle, and trip records.
+
+Some pages outside the customer/driver/manager dashboard, customer shipment flow, manager core rosters, notifications, and route optimization still require separate functional validation before the whole project can be declared complete. Mock fixtures are only used when `VITE_USE_MOCK_API=true`.
+
 ## Team Details
 
 | Name                     | ID Number  |

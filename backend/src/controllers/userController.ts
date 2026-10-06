@@ -15,4 +15,16 @@ export const userController = {
     if (!row) return res.status(404).json(buildError('User not found'))
     return res.json(buildSuccess(row, 'User retrieved'))
   },
+
+  me: (req: Request, res: Response) => {
+    const user = (req as any).user
+    if (!user) return res.status(401).json(buildError('Authentication required'))
+
+    return res.json(buildSuccess({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }, 'Current user retrieved'))
+  },
 }

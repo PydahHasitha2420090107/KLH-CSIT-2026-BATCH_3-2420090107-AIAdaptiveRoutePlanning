@@ -1,9 +1,27 @@
+import { useEffect, useState } from 'react'
 import { Card } from '../../components/common/Card'
 import { Badge } from '../../components/common/Badge'
-import { mockShipments } from '../../mocks/mockData'
+import { RouteMap } from '../../components/maps/RouteMap'
+import { useShipments } from '../../hooks/useShipments'
+import { routeService } from '../../services/routeService'
 
 export function TrackShipment() {
-  const shipment = mockShipments[0]
+  const { shipments, loading, error } = useShipments()
+  const shipment = shipments.find((item) => item.status !== 'Delivered' && item.status !== 'Cancelled') ?? shipments[0]
+  const [recommendedRoute, setRecommendedRoute] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!shipment?.origin || !shipment.destination) return
+    let active = true
+    void routeService.optimizeRoute(shipment.origin, shipment.destination)
+      .then((result) => { if (active) setRecommendedRoute(result.recommendedRoute) })
+      .catch(() => { if (active) setRecommendedRoute([]) })
+    return () => { active = false }
+  }, [shipment?.destination, shipment?.origin])
+
+  if (loading) return <div className="empty-state-box" role="status">Loading shipment tracking...</div>
+  if (error) return <div className="empty-state-box" role="alert">Unable to load shipment tracking: {error}</div>
+  if (!shipment) return <div className="empty-state-box">No transport requests are linked to your account.</div>
 
   return (
     <>
@@ -28,12 +46,7 @@ export function TrackShipment() {
         </Card>
 
         <Card title="Route visualization">
-          <div className="route-map-box">
-            <div className="map-node origin">Origin</div>
-            <div className="map-node current">Current</div>
-            <div className="map-node destination">Destination</div>
-            <div className="route-line" />
-          </div>
+          <RouteMap shipment={shipment} smartFleetRoute={recommendedRoute} height={360} />
         </Card>
       </div>
 

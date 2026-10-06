@@ -1,8 +1,21 @@
-import { USE_MOCK_API } from './api'
+import { API_BASE_URL, request, setAuthToken, USE_MOCK_API } from './api'
 import { mockUsers } from '../mocks/mockData'
 import type { User, UserRole } from '../types'
 
 const registeredUsersKey = 'smartfleet-registered-users'
+
+type AuthPayload = {
+  success: boolean
+  data: {
+    token: string
+    user: Omit<User, 'password'>
+  }
+}
+
+type CurrentUserPayload = {
+  success: boolean
+  data: Omit<User, 'password'>
+}
 
 function getRegisteredUsers(): User[] {
   const stored = localStorage.getItem(registeredUsersKey)
@@ -20,6 +33,18 @@ function getAvailableUsers(): User[] {
 }
 
 export async function signIn(email: string, password: string, role?: UserRole): Promise<User | null> {
+  try {
+    const result = await request<AuthPayload>(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      body: JSON.stringify({ email, password, role }),
+    })
+    setAuthToken(result.data.token)
+    return { ...result.data.user, password: '' }
+  } catch {
+    setAuthToken(null)
+    if (!USE_MOCK_API) return null
+  }
+
   if (USE_MOCK_API) {
     const user = getAvailableUsers().find(
       (entry) =>
@@ -35,7 +60,17 @@ export async function signIn(email: string, password: string, role?: UserRole): 
 }
 
 export async function registerUser(input: Omit<User, 'id'>): Promise<User | null> {
-  if (!USE_MOCK_API) return null
+  try {
+    const result = await request<AuthPayload>(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+    setAuthToken(result.data.token)
+    return { ...result.data.user, password: '' }
+  } catch {
+    setAuthToken(null)
+    if (!USE_MOCK_API) return null
+  }
 
   const users = getAvailableUsers()
   const emailExists = users.some((entry) => entry.email.toLowerCase() === input.email.toLowerCase())
@@ -48,19 +83,39 @@ export async function registerUser(input: Omit<User, 'id'>): Promise<User | null
 
 export async function getCurrentUser(): Promise<User | null> {
   const stored = localStorage.getItem('smartfleet-user')
+  const token = localStorage.getItem('smartfleet-token')
+
+  if (token) {
+    try {
+      const result = await request<CurrentUserPayload>(`${API_BASE_URL}/auth/me`)
+      const user = { ...result.data, password: '' }
+      await setCurrentUser(user)
+      return user
+    } catch {
+      if (!USE_MOCK_API) {
+        setAuthToken(null)
+        localStorage.removeItem('smartfleet-user')
+        return null
+      }
+    }
+  }
+
   if (!stored) return null
 
   try {
-    return JSON.parse(stored) as User
+    const user = JSON.parse(stored) as User
+    return { ...user, password: '' }
   } catch {
     return null
   }
 }
 
 export async function setCurrentUser(user: User): Promise<void> {
-  localStorage.setItem('smartfleet-user', JSON.stringify(user))
+  const { password: _password, ...safeUser } = user
+  localStorage.setItem('smartfleet-user', JSON.stringify(safeUser))
 }
 
 export async function clearCurrentUser(): Promise<void> {
   localStorage.removeItem('smartfleet-user')
+  setAuthToken(null)
 }
